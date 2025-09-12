@@ -20,7 +20,7 @@ def create_annotated_dataset(dataset_name, dataset_dir, dataset_format):
         name=dataset_name
     )
 
-    print(f"✅ {dataset_format.upper()} dataset '{dataset_name}' created with {len(dataset)} samples.")
+    print(f" {dataset_format.upper()} dataset '{dataset_name}' created with {len(dataset)} samples.")
     return dataset
 
 if __name__ == "__main__":
