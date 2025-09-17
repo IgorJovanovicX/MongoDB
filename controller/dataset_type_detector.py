@@ -1,7 +1,7 @@
 import os
 
 def detect_dataset_type(data_dir):
-    """Detect dataset type based on file extensions and folder structure."""
+
     exts = set(ext.lower() for ext in [
         os.path.splitext(f)[1] for f in os.listdir(data_dir)
     ])

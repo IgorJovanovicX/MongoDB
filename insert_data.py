@@ -2,17 +2,14 @@ import sys
 import os
 import fiftyone as fo
 
+from controller.dataset_type_router import handle_dataset_by_type
+from controller.dataset_type_detector import detect_dataset_type
 from utility.dataset_logger import log_dataset_event
-from utility.dataset_type_detector import detect_dataset_type
 from utility.dataset_metadata import add_standard_metadata
-from insert.image_insert import insert_image_data
-from insert.audio_insert import insert_audio_data
-from insert.video_insert import insert_video_data
-from insert.special_file_type_insert import insert_annotated_data
 
 def main():
     if len(sys.argv) != 3:
-        print("Usage: python insert_into_dataset.py <dataset_name> <data_dir>")
+        print("Usage: python insert_dataset.py <dataset_name> <data_dir>")
         sys.exit(1)
 
     dataset_name = sys.argv[1]
@@ -44,27 +41,18 @@ def main():
     print(f"Adding {new_type} data to dataset '{dataset_name}'...")
 
     try:
-        if new_type == "image":
-            added_count = insert_image_data(ds, data_dir)
-        elif new_type == "audio":
-            added_count = insert_audio_data(ds, data_dir)
-        elif new_type == "video":
-            added_count = insert_video_data(ds, data_dir)
-        elif new_type in ("coco", "yolo", "voc"):
-            added_count = insert_annotated_data(ds, data_dir, new_type)
-        else:
-            print(f"Unsupported dataset type: {new_type}")
-            sys.exit(1)
-
+        added_count = handle_dataset_by_type(ds, data_dir, new_type)  # auto-detects INSERT
         ds.save()
 
         add_standard_metadata(ds, data_dir, new_type, extra_metadata={"last_insert_count": added_count})
 
-        log_dataset_event(dataset_name, new_type, data_dir, added_count, update_type="insert", dataset_id=None, status="success")
+        log_dataset_event(dataset_name, new_type, data_dir, added_count,
+                          update_type="insert", dataset_id=None, status="success")
         print(f"Added {added_count} samples to dataset '{dataset_name}'.")
 
     except Exception as e:
-        log_dataset_event(dataset_name, new_type, data_dir, 0, update_type="insert", dataset_id=None, status=f"failed: {e}")
+        log_dataset_event(dataset_name, new_type, data_dir, 0,
+                          update_type="insert", dataset_id=None, status=f"failed: {e}")
         print(f"Failed to insert data: {e}")
         sys.exit(1)
 
